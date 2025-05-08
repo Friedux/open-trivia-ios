@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		AD07CADA2DCCCB0F002DB485 /* ChoiceTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD07CAD92DCCCB0F002DB485 /* ChoiceTextView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		AD0714EB2DC3937F00E68AE4 /* Code History.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Code History.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD07CAD92DCCCB0F002DB485 /* ChoiceTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChoiceTextView.swift; path = "Code History/ChoiceTextView.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +37,7 @@
 		AD0714E22DC3937F00E68AE4 = {
 			isa = PBXGroup;
 			children = (
+				AD07CAD92DCCCB0F002DB485 /* ChoiceTextView.swift */,
 				AD0714ED2DC3937F00E68AE4 /* Code History */,
 				AD0714EC2DC3937F00E68AE4 /* Products */,
 			);
@@ -119,6 +125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD07CADA2DCCCB0F002DB485 /* ChoiceTextView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
