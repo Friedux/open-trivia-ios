@@ -9,6 +9,8 @@ import Foundation
 
 @MainActor
 class GameManager: ObservableObject {
+    let amountOfQuestions: Int = 1
+    
     @Published var questions: [Question] = []
     @Published var currentIndex: Int = 0
     @Published var selectedAnswerIndex: Int? = nil
@@ -20,7 +22,20 @@ class GameManager: ObservableObject {
         return questions[currentIndex]
     }
 
-    func startNewGame(with questions: [Question]) {
+    func startGame() async {
+        do {
+            
+            let openTriviaQuestions = try await OpenTriviaAPIService.shared
+                .fetchQuestions(amountOfQuestions)
+            self.startGame(
+                with: openTriviaQuestions.map(Question.fromOpenTriviaQuestion)
+            )
+        } catch {
+            print("Error while trying to load questions: \(error)")
+        }
+    }
+
+    func startGame(with questions: [Question]) {
         self.questions = questions
         self.currentIndex = 0
         self.selectedAnswerIndex = nil

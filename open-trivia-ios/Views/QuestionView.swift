@@ -53,6 +53,7 @@ struct QuestionView: View {
                                     ? (.leading) : (.trailing),
                                 10
                             )
+                            .frame(maxWidth: .infinity, minHeight: 60)
                             .padding(.horizontal, 10)
                         }
                     )

@@ -9,7 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var gameManager = GameManager()
+    
     @State private var openTriviaQuestions: [OpenTriviaQuestion] = []
+    @State private var index: Int = 0
+    @State var isVisible: Bool = false
 
     private let mainColor = Color(
         red: 20 / 255,
@@ -19,23 +22,11 @@ struct ContentView: View {
     private let textColor = Color.white
     private let optionCount = 4
 
-    @State private var index: Int = 0
-
-    // With Questions - e.g. for Preview
-    //    init(previewQuestions: [Question]) {
-    //        self._questions = State(initialValue: previewQuestions)
-    //    }
-
-    // Without Questions - Default
-    init() {}
-
     var body: some View {
         ZStack {
             mainColor.ignoresSafeArea()
 
-            if gameManager.isGameOver {
-                GameOverView(gameManager.score, gameManager.questions.count)
-            } else {
+            if !gameManager.isGameOver {
                 // Show question with options
                 if let question = gameManager.currentQuestion {
                     VStack(alignment: .center, spacing: 20) {
@@ -54,6 +45,8 @@ struct ContentView: View {
                                 gameManager.answerSelected(isCorrect: isCorrect)
                             }
                         )
+                        .transition(.move(edge: .trailing))
+                        .animation(.easeInOut, value: gameManager.currentIndex)
 
                         let isLastQuestion =
                             !(gameManager.currentIndex < gameManager.questions
@@ -74,19 +67,29 @@ struct ContentView: View {
                 } else {
                     ProgressView("Loading Questions...")
                 }
+            } else {
+                // Show ResultView when Game is over - Check for Replay-Buttonpress
+                ResultView(
+                    gameManager.score,
+                    gameManager.questions.count,
+                    onPlayAgain: {
+                        isVisible = false
+                        Task {
+                            await gameManager.startGame()
+                        }
+                    }
+                )
+                .opacity(isVisible ? 1 : 0)
+                .scaleEffect(isVisible ? 1 : 0.95)
+                .animation(.smooth(extraBounce: 0.6), value: isVisible)
+                .onAppear {
+                    isVisible = true
+                }
             }
         }
         .foregroundStyle(textColor)
         .task {
-            do {
-                let openTriviaQuestions = try await OpenTriviaAPIService.shared
-                    .fetchQuestions(amount: 10)
-                gameManager.startNewGame(
-                    with: openTriviaQuestions.map(Question.fromOpenTriviaQuestion)
-                )
-            } catch {
-                print("Error while trying to load questions: \(error)")
-            }
+            await gameManager.startGame()
         }
     }
 }
@@ -94,7 +97,7 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         let gameManager = GameManager()
-        gameManager.startNewGame(with: [
+        gameManager.startGame(with: [
             Question(
                 text: "What was the first computer bug?",
                 possibleAnswers: ["Ant", "Beetle", "Moth", "Fly"],

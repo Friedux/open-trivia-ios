@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-struct GameOverView: View {
+struct ResultView: View {
     let score: Int
     let questionCount: Int
+    let onPlayAgain: () -> Void
 
     @State private var animatedScore = 0
 
@@ -17,38 +18,43 @@ struct GameOverView: View {
         VStack(alignment: .center, spacing: 10) {
             Text("🎉 Score 🎉")
                 .font(.largeTitle)
-            Text("\(score) / \(questionCount)")
-                .font(.largeTitle)
+            Text("\(animatedScore) / \(questionCount)")
                 .contentTransition(.numericText())
+                .font(.largeTitle)
                 .monospacedDigit()
                 .animation(.easeOut(duration: 1), value: animatedScore)
-            
+                .onAppear {
+                    withAnimation {
+                        animatedScore = score
+                    }
+                }
+
             HStack {
                 Spacer()
                 Text("Tap to play again")
                     .foregroundColor(.gray)
                 Spacer()
             }.padding(.top, 50)
-            
+
             Button("Play again") {
-//                action: {
-//                    
-//                }
+                onPlayAgain()
             }.buttonStyle(.borderedProminent)
-        }
-        .onAppear {
-            withAnimation(.easeOut(duration: 1.0)) {
-                animatedScore = score
-            }
         }
     }
 
-    init(_ score: Int, _ questionCount: Int) {
+    init(
+        _ score: Int,
+        _ questionCount: Int,
+        onPlayAgain: @escaping () -> Void
+    ) {
         self.score = score
         self.questionCount = questionCount
+        self.onPlayAgain = onPlayAgain
     }
 }
 
-#Preview {
-    GameOverView(9, 20)
+struct MyView_Previews: PreviewProvider {
+    static var previews: some View {
+        ResultView(10, 20, onPlayAgain: {})
+    }
 }

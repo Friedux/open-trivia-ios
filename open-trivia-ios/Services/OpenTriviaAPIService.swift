@@ -11,8 +11,8 @@ struct OpenTriviaAPIService {
     static let shared = OpenTriviaAPIService()
     private let baseURL = "https://opentdb.com/api.php"
 
-    func fetchQuestions(amount: Int = 10) async throws -> [OpenTriviaQuestion] {
-        guard let url = URL(string: "\(baseURL)?amount=\(amount)&type=multiple")
+    func fetchQuestions(_ amount: Int = 10) async throws -> [OpenTriviaQuestion] {
+        guard let url = URL(string: "\(baseURL)?amount=\(amount)")
         else {
             throw URLError(.badURL)
         }
