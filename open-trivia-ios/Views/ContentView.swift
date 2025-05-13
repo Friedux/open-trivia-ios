@@ -8,11 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedAnswerIndex: Int? = nil
-    @State private var score: Int = 0
-    @State private var isGameOver: Bool = false
-    @State private var isRunning: Bool = false
-    @State private var questions: [Question] = []
+    @StateObject private var gameManager = GameManager()
+    @State private var openTriviaQuestions: [OpenTriviaQuestion] = []
 
     private let mainColor = Color(
         red: 20 / 255,
@@ -25,9 +22,9 @@ struct ContentView: View {
     @State private var index: Int = 0
 
     // With Questions - e.g. for Preview
-    init(previewQuestions: [Question]) {
-        self._questions = State(initialValue: previewQuestions)
-    }
+    //    init(previewQuestions: [Question]) {
+    //        self._questions = State(initialValue: previewQuestions)
+    //    }
 
     // Without Questions - Default
     init() {}
@@ -36,43 +33,43 @@ struct ContentView: View {
         ZStack {
             mainColor.ignoresSafeArea()
 
-            if isGameOver {
-                // TODO: show result screen
-                GameOverView(score)
+            if gameManager.isGameOver {
+                GameOverView(gameManager.score, gameManager.questions.count)
             } else {
                 // Show question with options
-                if !questions.isEmpty {
+                if let question = gameManager.currentQuestion {
                     VStack(alignment: .center, spacing: 20) {
-                        Text("\(index + 1) / \(questions.count)")
-                            .font(.callout)
-                            .multilineTextAlignment(.leading)
-                            .padding()
+                        Text(
+                            "\(gameManager.currentIndex + 1) / \(gameManager.questions.count)"
+                        )
+                        .font(.callout)
+                        .multilineTextAlignment(.leading)
+                        .padding()
 
                         QuestionView(
-                            selectedAnswerIndex: $selectedAnswerIndex,
-                            question: questions[index],
+                            selectedAnswerIndex: $gameManager
+                                .selectedAnswerIndex,
+                            question: question,
                             onAnswerSelected: { isCorrect in
-                                if isCorrect {
-                                    score += 1
-                                    print(score)
-                                }
+                                gameManager.answerSelected(isCorrect: isCorrect)
                             }
                         )
 
-                        Button(
-                            action: {
-                                if index < questions.count - 1 {
-                                    index += 1
-                                    selectedAnswerIndex = nil
-                                } else {
-                                    isGameOver = true
-                                }
-                            },
-                            label: {
-                                Text("Next Question")
-                            }
+                        let isLastQuestion =
+                            !(gameManager.currentIndex < gameManager.questions
+                            .count - 1)
+
+                        Button(action: {
+                            gameManager.goToNextQuestion()
+                        }) {
+                            Text(
+                                isLastQuestion
+                                    ? "Show Results" : "Next Question"
+                            )
+                        }
+                        .opacity(
+                            (gameManager.selectedAnswerIndex != nil) ? 1 : 0
                         )
-                        .opacity((selectedAnswerIndex != nil) ? 1 : 0)
                     }
                 } else {
                     ProgressView("Loading Questions...")
@@ -82,37 +79,29 @@ struct ContentView: View {
         .foregroundStyle(textColor)
         .task {
             do {
-                let openTriviaQuestions = try await performApiCall()
-                questions = openTriviaQuestions.map(
-                    Question.fromOpenTriviaQuestion
+                let openTriviaQuestions = try await OpenTriviaAPIService.shared
+                    .fetchQuestions(amount: 10)
+                gameManager.startNewGame(
+                    with: openTriviaQuestions.map(Question.fromOpenTriviaQuestion)
                 )
             } catch {
                 print("Error while trying to load questions: \(error)")
             }
         }
     }
-
-    func performApiCall() async throws -> [OpenTriviaQuestion] {
-        let url = "https://opentdb.com/api.php?amount=10"
-        let (data, _) = try await URLSession.shared.data(
-            from: URL(string: url)!
-        )
-        let openTriviaResults = try JSONDecoder().decode(
-            OpenTriviaResults.self,
-            from: data
-        )
-        return openTriviaResults.results
-    }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        let previewQuestion = Question(
-            text: "What was the first computer bug?",
-            possibleAnswers: ["Ant", "Beetle", "Fly"],
-            rightAnswerIndex: 0
-        )
-
-        ContentView(previewQuestions: [previewQuestion])
+        let gameManager = GameManager()
+        gameManager.startNewGame(with: [
+            Question(
+                text: "What was the first computer bug?",
+                possibleAnswers: ["Ant", "Beetle", "Moth", "Fly"],
+                rightAnswerIndex: 2
+            )
+        ])
+        return ContentView()
+            .environmentObject(gameManager)
     }
 }

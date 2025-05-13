@@ -13,11 +13,16 @@ struct Question {
     var rightAnswerIndex: Int
     
     static func fromOpenTriviaQuestion(_ openTriviaQuestion: OpenTriviaQuestion) -> Question {
-        let possibleAnswers = (openTriviaQuestion.incorrect_answers + [openTriviaQuestion.correct_answer]).shuffled()
+        let decodedCorrect = String(htmlEncodedString: openTriviaQuestion.correct_answer) ?? ""
+        let decodedIncorrect = openTriviaQuestion.incorrect_answers.map {
+            String(htmlEncodedString: $0) ?? ""
+        }
+        
+        let possibleAnswers = (decodedIncorrect + [decodedCorrect]).shuffled()
         return Question(
             text: String(htmlEncodedString: openTriviaQuestion.question) ?? "Missing Question Text!",
             possibleAnswers: possibleAnswers,
-            rightAnswerIndex: possibleAnswers.firstIndex(of: openTriviaQuestion.correct_answer)!
+            rightAnswerIndex: possibleAnswers.firstIndex(of: decodedCorrect)!
         )
     }
 }
