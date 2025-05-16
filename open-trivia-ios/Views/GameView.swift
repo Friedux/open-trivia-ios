@@ -7,12 +7,13 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct GameView: View {
+    @EnvironmentObject private var appState: AppState
     @StateObject private var gameManager = GameManager()
     
     @State private var openTriviaQuestions: [OpenTriviaQuestion] = []
     @State private var index: Int = 0
-    @State var isVisible: Bool = false
+    @State private var isVisible: Bool = false
 
     private let mainColor = Color(
         red: 20 / 255,
@@ -78,6 +79,9 @@ struct ContentView: View {
                         Task {
                             await gameManager.startGame()
                         }
+                    },
+                    onMainMenu: {
+                        appState.hasStartedGame = false
                     }
                 )
                 .opacity(isVisible ? 1 : 0)
@@ -105,7 +109,7 @@ struct ContentView_Previews: PreviewProvider {
                 rightAnswerIndex: 2
             )
         ])
-        return ContentView()
+        return GameView()
             .environmentObject(gameManager)
     }
 }
