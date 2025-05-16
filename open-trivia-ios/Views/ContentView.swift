@@ -40,6 +40,7 @@ struct ContentView: View {
                         QuestionView(
                             selectedAnswerIndex: $gameManager
                                 .selectedAnswerIndex,
+                            isPressed: gameManager.isButtonPressed,
                             question: question,
                             onAnswerSelected: { isCorrect in
                                 gameManager.answerSelected(isCorrect: isCorrect)

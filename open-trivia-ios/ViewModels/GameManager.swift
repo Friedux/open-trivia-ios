@@ -9,13 +9,14 @@ import Foundation
 
 @MainActor
 class GameManager: ObservableObject {
-    let amountOfQuestions: Int = 1
-    
+    let amountOfQuestions: Int = 5
+
     @Published var questions: [Question] = []
     @Published var currentIndex: Int = 0
     @Published var selectedAnswerIndex: Int? = nil
     @Published var score: Int = 0
     @Published var isGameOver: Bool = false
+    @Published var isButtonPressed : Bool = false
 
     var currentQuestion: Question? {
         guard currentIndex < questions.count else { return nil }
@@ -24,7 +25,7 @@ class GameManager: ObservableObject {
 
     func startGame() async {
         do {
-            
+
             let openTriviaQuestions = try await OpenTriviaAPIService.shared
                 .fetchQuestions(amountOfQuestions)
             self.startGame(
@@ -44,6 +45,7 @@ class GameManager: ObservableObject {
     }
 
     func answerSelected(isCorrect: Bool) {
+        isButtonPressed = true
         if isCorrect {
             score += 1
         }
@@ -56,5 +58,6 @@ class GameManager: ObservableObject {
         } else {
             isGameOver = true
         }
+        isButtonPressed = false
     }
 }

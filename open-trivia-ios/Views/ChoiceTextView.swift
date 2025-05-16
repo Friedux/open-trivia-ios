@@ -16,6 +16,8 @@ struct ChoiceTextView: View {
             .font(.body)
             .bold()
             .multilineTextAlignment(.center)
+            .lineLimit(3)
+            .minimumScaleFactor(0.5)
             .padding()
             .cornerRadius(5)
             .frame(maxWidth: .infinity)
